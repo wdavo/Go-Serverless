@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Go Serverless</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
+</head>
+
+<body style="margin-top: 20px; margin-left:20px; width:90%">
+    <!--[if lt IE 7]>
+            <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+
+    <div class="container">
+        <div class="row">
+            <div class="col-4">
+                <div style="width: 90%">
+                    <h2>Post a message</h2>
+                    Author:
+                    <br/>
+                    <input id="postMessage-author" type="text" style="width: 100%"></input>
+                    <br/> Message:
+                    <br/>
+                    <textarea id="postMessage-message" rows="5" style="width: 100%; resize: none; overflow: hidden"></textarea>
+                    </intput>
+                    <br/>
+                    <button id="postMessage-button" style="float:right" disabled="disabled">Post</button>
+                    <br/>
+                    <br/>
+                    <div id="postMessage-result" style="width: 100%" class="alert" role="alert">
+                        <p id="postMessage-result-text"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8">
+                <h2>Messages</h2>
+                <br/>
+                <ul id="messageList" style="list-style: none; padding-left:0">
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+        $(function () {
+            $("#postMessage-author").keyup(postButtonEnabledLogic);
+            $("#postMessage-message").keyup(postButtonEnabledLogic);
+            $("#postMessage-button").click(postMessage);
+            poll();
+        })
+
+        function postButtonEnabledLogic() {
+
+            var enabled = true;
+
+            if (!$.trim($("#postMessage-author").val())) {
+                enabled = false;
+            }
+
+            if (!$.trim($("#postMessage-message").val())) {
+                enabled = false;
+            }
+
+            $("#postMessage-button").attr("disabled", !enabled);
+
+        }
+
+        function postMessage() {
+
+            $.ajax({
+                method: "POST",
+                url: "https://0ggtuv5nwf.execute-api.ap-southeast-2.amazonaws.com/mock/messages",
+                contentType: 'application/json',
+                dataType: 'text',
+                data: JSON.stringify({ author: "John", message: "This is a message" }),
+                success: postMessageSuccess,
+                error: postMessageError
+            });
+        }
+
+        function postMessageSuccess(data) {
+            $("#postMessage-message").val("");
+            $("#postMessage-result-text").text("Success");
+
+            $("#postMessage-result").removeClass("alert-danger");
+            $("#postMessage-result").addClass("alert-success");
+
+        }
+
+        function postMessageError(data) {
+            $("#postMessage-result-text").text("Error");
+
+            $("#postMessage-result").removeClass("alert-success");
+            $("#postMessage-result").addClass("alert-danger");
+        }
+
+        function poll() {
+
+            $.getJSON("https://0ggtuv5nwf.execute-api.ap-southeast-2.amazonaws.com/mock/messages", function (data) {
+
+                $("#messageList li").remove();
+
+                for (var i in data) {
+                    $("#messageList").prepend("<li><div style=\"background-color: #F5F5F5; padding-left: 5px\">" + data[i].message + "</div><small><i>" + data[i].author + "</i></small><br/></br></li>");
+                }
+
+                setTimeout(poll, 2500);
+
+            })
+        }
+
+    </script>
+
+</body>
+
+</html>
